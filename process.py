@@ -239,6 +239,148 @@ def process_file(file_path):
         return "\n".join(i + line if line else "" for line in lines)
 
     code, count = re.subn(pattern, replace_drill, code, count=1)
+    POCKET_PATTERN = re.compile(
+        r'(?P<indent>^[ \t]*)RECT_POCKET(?P<num>[12])\s*=\s*\(\s*'
+        r'cq\.Workplane\("XZ"\)\s*'
+        r'\.rect\((?P<length>[^,]+),\s*(?P<width>[^,]+),\s*centered=False\)\s*'
+        r'\.extrude\((?P<depth>[^)]+)\)\s*'
+        r'\.edges\("\|Y"\)\s*'
+        r'\.fillet\((?P<fillet>[^)]+)\)\s*'
+        r'\.translate\(\(\s*(?P<x>[^,]+),\s*(?P<y>[^,]+),\s*(?P<z>[^)]+)\)\)\s*'
+        r'\)',
+        re.MULTILINE,
+    )
+
+
+    def replace_pocket(match):
+        i = match.group("indent")
+        n = match.group("num")
+
+        length = match.group("length").strip()
+        width = match.group("width").strip()
+        depth = match.group("depth").strip()
+        fillet = match.group("fillet").strip()
+        x = match.group("x").strip()
+        y = match.group("y").strip()
+
+        neg_depth = f"-{depth}" if re.fullmatch(r"[\w.]+", depth) else f"-({depth})"
+
+        return (
+            f'{i}RECT_POCKET{n} = (\n'
+            f'{i}    cq.Workplane("XZ")\n'
+            f'{i}    .rect({length}, {width}, centered=False)\n'
+            f'{i}    .extrude({neg_depth})\n'
+            f'{i}    .edges("|Y")\n'
+            f'{i}    .fillet({fillet})\n'
+            f'{i}    .translate(({x}, 0, {y}))\n'
+            f'{i})'
+        )
+
+
+    matches = list(POCKET_PATTERN.finditer(code))
+    
+
+    code = POCKET_PATTERN.sub(replace_pocket, code)
+    CUTOUT_PATTERN = re.compile(
+        r'(?P<indent>^[ \t]*)RECT_CUTOUT3\s*=\s*\(\s*'
+        r'cq\.Workplane\("XZ"\)\s*'
+        r'\.rect\((?P<length>[^,]+),\s*(?P<width>[^,]+),\s*centered=False\)\s*'
+        r'\.extrude\((?P<depth>[^)]+)\)\s*'
+        r'\.edges\("\|Y"\)\s*'
+        r'\.fillet\((?P<fillet>[^)]+)\)\s*'
+        r'\.translate\(\(\s*(?P<x>[^,]+),\s*[^,]+,\s*(?P<z>[^)]+)\)\)\s*'
+        r'\)',
+        re.MULTILINE,
+    )
+
+
+    def replace_cutout(match):
+        i = match.group("indent")
+
+        return (
+            f'{i}RECT_CUTOUT3 = (\n'
+            f'{i}    cq.Workplane("XZ")\n'
+            f'{i}    .rect({match.group("length").strip()}, {match.group("width").strip()}, centered=False)\n'
+            f'{i}    .extrude(-({match.group("depth").strip()}))\n'
+            f'{i}    .edges("|Y")\n'
+            f'{i}    .fillet({match.group("fillet").strip()})\n'
+            f'{i}    .translate(({match.group("x").strip()}, 0, {match.group("z").strip()}))\n'
+            f'{i})'
+        )
+
+
+    code = CUTOUT_PATTERN.sub(replace_cutout, code)
+    CUTOUT_PATTERN = re.compile(
+        r'(?P<indent>^[ \t]*)RECT_CUTOUT(?P<num>[12])\s*=\s*\(\s*'
+        r'cq\.Workplane\("XZ"\)\s*'
+        r'\.rect\((?P<length>[^,]+),\s*(?P<width>[^,]+),\s*centered=False\)\s*'
+        r'\.extrude\((?P<depth>[^)]+)\)\s*'
+        r'\.edges\("\|Y"\)\s*'
+        r'\.fillet\((?P<fillet>[^)]+)\)\s*'
+        r'\.translate\(\(\s*(?P<x>[^,]+),\s*(?P<y>[^,]+),\s*(?P<z>[^)]+)\)\)\s*'
+        r'\)',
+        re.MULTILINE,
+    )
+
+
+    def replace_cutout(match):
+        i = match.group("indent")
+        n = match.group("num")
+
+        length = match.group("length").strip()
+        width = match.group("width").strip()
+        depth = match.group("depth").strip()
+        fillet = match.group("fillet").strip()
+        x = match.group("x").strip()
+        z = match.group("y").strip()
+
+        neg_depth = f"-({depth})"
+
+        return (
+            f'{i}RECT_CUTOUT{n} = (\n'
+            f'{i}    cq.Workplane("XZ")\n'
+            f'{i}    .rect({length}, {width}, centered=False)\n'
+            f'{i}    .extrude({neg_depth})\n'
+            f'{i}    .edges("|Y")\n'
+            f'{i}    .fillet({fillet})\n'
+            f'{i}    .translate(({x}, 0, {z}))\n'
+            f'{i})'
+        )
+
+
+    matches = list(CUTOUT_PATTERN.finditer(code))
+   
+
+    code = CUTOUT_PATTERN.sub(replace_cutout, code)
+    POCKET_PATTERN = re.compile(
+        r'(?P<indent>^[ \t]*)RECT_POCKET3\s*=\s*\(\s*'
+        r'cq\.Workplane\("XZ"\)\s*'
+        r'\.rect\((?P<length>[^,]+),\s*(?P<width>[^,]+),\s*centered=False\)\s*'
+        r'\.extrude\((?P<depth>[^)]+)\)\s*'
+        r'\.edges\("\|Y"\)\s*'
+        r'\.fillet\((?P<fillet>[^)]+)\)\s*'
+        r'\.translate\(\(\s*(?P<x>[^,]+),\s*(?P<y>[^,]+),\s*(?P<z>[^)]+)\)\)\s*'
+        r'\)',
+        re.MULTILINE,
+    )
+
+
+    def replace_pocket(match):
+        i = match.group("indent")
+
+        return (
+            f'{i}RECT_POCKET3 = (\n'
+            f'{i}    cq.Workplane("XZ")\n'
+            f'{i}    .rect({match.group("length").strip()}, {match.group("width").strip()}, centered=False)\n'
+            f'{i}    .extrude(-{match.group("depth").strip()})\n'
+            f'{i}    .edges("|Y")\n'
+            f'{i}    .fillet({match.group("fillet").strip()})\n'
+            f'{i}    .translate(({match.group("x").strip()}, 0, {match.group("y").strip()}))\n'
+            f'{i})'
+        )
+
+
+    code = POCKET_PATTERN.sub(replace_pocket, code)
 
     if count:
         print("Successfully converted drill-hole pattern")
