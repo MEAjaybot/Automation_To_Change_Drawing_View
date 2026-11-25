@@ -204,6 +204,17 @@ def process_file(file_path):
         'NearestToPointSelector((0, 0, WIDTH))',
         code
     )
+    code = re.sub(
+        r'CHAMFER_EDGE_SELECTOR\s*=\s*["\']\|Z\s+and\s+<[YX]["\']',
+        'CHAMFER_EDGE_SELECTOR = "|Y and <X"',
+        code,
+        flags=re.IGNORECASE
+    )
+    code = re.sub(
+        r'\.pushPoints\(\[\(THREAD(\d+)_X,\s*THREAD\1_Y\)\]\)',
+        r'.pushPoints([(THREAD\1_Y, THREAD\1_X)])',
+        code
+    )
     pattern = re.compile(
         r'(?ms)^(?P<indent>[ \t]*)top_z\s*=.*\r?\n'
         r'[ \t]*for\s+x,\s*y,\s*dia,\s*depth,\s*angle\s+in\s+HOLE_DATA\s*:\s*\r?\n'
